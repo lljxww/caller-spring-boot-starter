@@ -1,0 +1,14 @@
+spring:
+  caller:
+    serviceItems:
+      - apiName: "gh"
+        baseUrl: "https://api.github.com"
+        apiItems:
+          - method: "getUserInfo"
+            url: "/users/{username}"
+            httpMethod: "GET"
+            paramType: "path"
+            description: "查询用户信息"
+            needCache: false
+            cacheTime: 0
+            contentType: "application/json"

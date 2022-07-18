@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=cn.liangjw.apicaller.properties.CallerProperties,cn.liangjw.apicaller.Caller
