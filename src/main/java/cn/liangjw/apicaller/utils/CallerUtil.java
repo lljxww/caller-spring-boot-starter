@@ -10,6 +10,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class CallerUtil {
         return apiItem;
     }
 
-    public static String getFinalUrl(String paramType, String url, @Nullable Map<String, String> param) {
+    public static String getFinalUrl(String paramType, String url, @Nullable Map<String, String> param) throws UnsupportedEncodingException {
         if ("query".equalsIgnoreCase(paramType)) {
             if (param == null) {
                 return url;
@@ -74,7 +75,7 @@ public class CallerUtil {
 
             String query = "?";
             for (var item : param.keySet()) {
-                query += ("&" + item + "=" + URLEncoder.encode(param.get(item)));
+                query += ("&" + item + "=" + URLEncoder.encode(param.get(item), "UTF-8"));
             }
 
             var finalUrl = url + query;
@@ -95,7 +96,7 @@ public class CallerUtil {
 
             var finalUrl = url;
             for (var item : param.keySet()) {
-                finalUrl = finalUrl.replace("{" + item + "}", URLEncoder.encode(param.get(item)));
+                finalUrl = finalUrl.replace("{" + item + "}", URLEncoder.encode(param.get(item), "UTF-8"));
             }
 
             return finalUrl;
@@ -107,9 +108,7 @@ public class CallerUtil {
     public static HttpEntity<MultiValueMap<String, String>> getParamEntity(CallerContext context) {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
 
-        HttpHeaders headers = context.getRequestOption().getAuthorizeHeaderFunc() != null
-                ? context.getRequestOption().getAuthorizeHeaderFunc().apply(new HttpHeaders())
-                : new HttpHeaders();
+        HttpHeaders headers = context.getRequestOption().getAuthorizeHeader();
 
         if (context.getParam() != null
                 && context.getApiItem().getParamType().equalsIgnoreCase("body")) {
@@ -119,5 +118,12 @@ public class CallerUtil {
         }
 
         return new HttpEntity<>(map, headers);
+    }
+
+    public static HttpHeaders getDefaultHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("User-Agent", "cn.liangjw.caller/0.1");
+
+        return headers;
     }
 }

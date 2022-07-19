@@ -13,6 +13,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.lang.Nullable;
 import org.springframework.util.MultiValueMap;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 @Getter
@@ -35,18 +36,6 @@ public class CallerContext {
 
     private ApiResult apiResult;
 
-    public String getFinalUrl() {
-        return CallerUtil.getFinalUrl(apiItem.getParamType(), serviceItem.getBaseUrl() + apiItem.getUrl(), param);
-    }
-
-    public HttpMethod getHttpMethod() {
-        return HttpMethod.valueOf(apiItem.getHttpMethod().toUpperCase());
-    }
-
-    public HttpEntity<MultiValueMap<String, String>> getRequestHttpEntity() {
-        return CallerUtil.getParamEntity(this);
-    }
-
     public CallerContext(String method, @Nullable Map<String, String> param, CallerProperties callerProperties, @Nullable RequestOption requestOption)
             throws Exception {
         this.method = method;
@@ -57,5 +46,17 @@ public class CallerContext {
         this.apiItem = CallerUtil.getApiItem(serviceItem, apiName);
         this.param = param;
         this.requestOption = requestOption == null ? RequestOption.getDefaultRequestOption() : requestOption;
+    }
+
+    public String getFinalUrl() throws UnsupportedEncodingException {
+        return CallerUtil.getFinalUrl(apiItem.getParamType(), serviceItem.getBaseUrl() + apiItem.getUrl(), param);
+    }
+
+    public HttpMethod getHttpMethod() {
+        return HttpMethod.valueOf(apiItem.getHttpMethod().toUpperCase());
+    }
+
+    public HttpEntity<MultiValueMap<String, String>> getRequestHttpEntity() {
+        return CallerUtil.getParamEntity(this);
     }
 }

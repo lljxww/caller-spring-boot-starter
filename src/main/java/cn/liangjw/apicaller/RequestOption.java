@@ -1,7 +1,10 @@
 package cn.liangjw.apicaller;
 
 import cn.liangjw.apicaller.models.ApiResult;
-import lombok.Data;
+import cn.liangjw.apicaller.utils.CallerUtil;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpHeaders;
 
 import java.util.function.Consumer;
@@ -12,22 +15,35 @@ import java.util.function.Function;
  * @version 1.0
  * Create at 018 07/18 10:50
  */
-@Data
 public class RequestOption {
+
+    @Setter
+    @Getter
     private boolean triggerOnExecuted;
 
+    @Setter
+    @Getter
     private boolean fromCache;
 
+    @Setter
+    @Getter
     private boolean dontLog;
 
+    @Setter
+    @Getter
     private String customAuthorizeInfo;
 
+    @Setter
+    @Getter(AccessLevel.MODULE)
     private Function<HttpHeaders, HttpHeaders> authorizeHeaderFunc;
 
+    @Getter(AccessLevel.MODULE)
     private Function<CallerContext, ApiResult> getFromCacheFunc;
 
+    @Getter(AccessLevel.MODULE)
     private Consumer<CallerContext> setToCacheCus;
 
+    @Getter(AccessLevel.MODULE)
     private Consumer<CallerContext> logCus;
 
     private RequestOption() {
@@ -48,7 +64,9 @@ public class RequestOption {
         return option;
     }
 
-    public HttpHeaders getAuthorizeHeader(HttpHeaders headers) {
+    public HttpHeaders getAuthorizeHeader() {
+        HttpHeaders headers = CallerUtil.getDefaultHeaders();
+
         if (authorizeHeaderFunc != null) {
             headers = authorizeHeaderFunc.apply(headers);
         }
