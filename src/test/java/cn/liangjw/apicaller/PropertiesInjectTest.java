@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.Assert;
 
 import java.util.List;
 
@@ -19,5 +20,6 @@ public class PropertiesInjectTest {
     @Test
     public void InjectTest() {
         List<ServiceItem> services = callerProperties.getServiceItems();
+        Assert.isTrue(services != null);
     }
 }

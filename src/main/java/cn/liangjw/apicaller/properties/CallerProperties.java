@@ -10,9 +10,6 @@ import java.util.List;
 @ConfigurationProperties(prefix = "spring.caller")
 @Configuration
 public class CallerProperties {
-
-    private List<AuthorizationProperties> authorizations;
-
     private List<ServiceItem> serviceItems;
 }
 

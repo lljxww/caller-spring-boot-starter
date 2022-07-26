@@ -9,7 +9,7 @@ public class ServiceItem {
 
     private String apiName;
 
-    private String authorizationType;
+    private String authorizationType = "none";
 
     private String baseUrl;
 

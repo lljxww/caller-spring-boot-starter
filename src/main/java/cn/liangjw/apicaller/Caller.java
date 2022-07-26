@@ -3,11 +3,10 @@ package cn.liangjw.apicaller;
 import cn.liangjw.apicaller.models.ApiResult;
 import cn.liangjw.apicaller.properties.CallerProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Map;
 
 @Component
 public class Caller {
@@ -15,21 +14,25 @@ public class Caller {
     @Autowired
     private CallerProperties callerProperties;
 
-    public ApiResult call(String method, Map<String, String> param) throws Exception {
-        return call(method, param, RequestOption.getDefaultRequestOption());
+    public ApiResult call(String method) {
+        return call(method, null);
     }
 
-    public ApiResult call(String method, Map<String, String> param, RequestOption option) throws Exception {
-        var context = new CallerContext(method, param, callerProperties, option);
+    public ApiResult call(String method, @Nullable Object param) {
+        return call(method, param, null);
+    }
+
+    public ApiResult call(String method, @Nullable Object param, @Nullable RequestOption option) {
+        var context = CallerContext.build(callerProperties, method, param, option);
 
         if (context.getApiItem().getNeedCache()) {
             if (option.isFromCache()) {
-                context.setApiResult(option.getFromCache(context));
+                context.setApiResult(CallerOption.readCache(context));
             }
         }
 
         if (context.getApiResult() != null) {
-            option.log(context);
+            CallerOption.log(context);
             return context.getApiResult();
         }
 
@@ -38,12 +41,12 @@ public class Caller {
 
             var entity = restTemplate.exchange(context.getFinalUrl(),
                     context.getHttpMethod(),
-                    context.getRequestHttpEntity(),
+                    context.getHttpEntity(),
                     String.class);
 
             context.setApiResult(new ApiResult(entity));
             if (context.getApiItem().getNeedCache()) {
-                option.setToCache(context);
+                CallerOption.setCache(context);
             }
 
             return context.getApiResult();
