@@ -12,3 +12,18 @@ spring:
             needCache: false
             cacheTime: 0
             contentType: "application/json"
+      - api-name: "weibo"
+        authorizationType: "none"
+        baseUrl: "https://weibo.com/ajax"
+        timeout: 5000
+        api-items:
+          - method: "hot"
+            url: "/side/hotSearch"
+            http-method: "GET"
+            param-type: "query"
+            description: "热搜"
+            need-cache: true
+            cache-time: 10
+            content-type: "application/json"
+            authorization-type: "none"
+            timeout: 5000

@@ -8,8 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 
-import java.util.HashMap;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class CallerCallTest {
@@ -17,10 +15,8 @@ public class CallerCallTest {
     Caller caller;
 
     @Test
-    public void GetTest() throws Exception {
-        var param = new HashMap<String, String>();
-        param.put("username", "liang1224");
-        var result = caller.call("gh.getUserInfo", param);
+    public void GetWeiboTest() throws Exception {
+        var result = caller.call("weibo.hot");
         Assert.isTrue(result.getStatusCode() == HttpStatus.OK, "bad request");
     }
 }

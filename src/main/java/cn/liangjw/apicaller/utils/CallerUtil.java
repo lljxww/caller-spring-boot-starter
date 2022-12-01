@@ -95,13 +95,13 @@ public class CallerUtil {
     }
 
     public static HttpEntity<String> getRequestHttpEntity(CallerContext context) {
-        String requstParam = "";
+        String requestParam = "";
 
         if (context.getParam() != null
                 && context.getApiItem().getParamType().equalsIgnoreCase("body")) {
-            requstParam = JSON.toJSONString(context.getParam());
+            requestParam = JSON.toJSONString(context.getParam());
         }
 
-        return new HttpEntity<>(requstParam, context.getHttpHeaders());
+        return new HttpEntity<>(requestParam, context.getHttpHeaders());
     }
 }

@@ -14,6 +14,9 @@ import java.util.function.Function;
  */
 public class CallerOption {
     private static Map<String, Function<CallerContext, CallerContext>> authorizeFuncs = new HashMap<>();
+    private static Function<CallerContext, ApiResult> readCacheFunction;
+    private static Consumer<CallerContext> setToCacheConsumer;
+    private static Consumer<CallerContext> logConsumer;
 
     public static void addAuthorizeFunc(String label, Function<CallerContext, CallerContext> func) {
         if (authorizeFuncs.containsKey(label)) {
@@ -33,8 +36,6 @@ public class CallerOption {
         return authorizeFuncs.get(label).apply(context);
     }
 
-    private static Function<CallerContext, ApiResult> readCacheFunction;
-
     public static void addReadCacheFunction(Function<CallerContext, ApiResult> function) {
         readCacheFunction = function;
     }
@@ -47,8 +48,6 @@ public class CallerOption {
         return null;
     }
 
-    private static Consumer<CallerContext> setToCacheConsumer;
-
     public static void addSetToCacheConsumer(Consumer<CallerContext> consumer) {
         setToCacheConsumer = consumer;
     }
@@ -58,8 +57,6 @@ public class CallerOption {
             setToCacheConsumer.accept(context);
         }
     }
-
-    private static Consumer<CallerContext> logConsumer;
 
     public static void addLogConsumer(Consumer<CallerContext> consumer) {
         logConsumer = consumer;

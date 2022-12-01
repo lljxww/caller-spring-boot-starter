@@ -26,7 +26,7 @@ public class Caller {
         var context = CallerContext.build(callerProperties, method, param, option);
 
         if (context.getApiItem().getNeedCache()) {
-            if (option.isFromCache()) {
+            if (context.getRequestOption().isFromCache()) {
                 context.setApiResult(CallerOption.readCache(context));
             }
         }
