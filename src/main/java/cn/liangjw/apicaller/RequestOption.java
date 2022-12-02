@@ -27,7 +27,7 @@ public class RequestOption {
     }
 
     public static RequestOption build(Function<RequestOption, RequestOption> func) {
-        var option = getDefaultRequestOption();
+        RequestOption option = getDefaultRequestOption();
         return func.apply(option);
     }
 

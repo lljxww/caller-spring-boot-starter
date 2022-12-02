@@ -3,8 +3,10 @@ package cn.liangjw.apicaller;
 import cn.liangjw.apicaller.models.ApiResult;
 import cn.liangjw.apicaller.properties.CallerProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,7 +25,7 @@ public class Caller {
     }
 
     public ApiResult call(String method, @Nullable Object param, @Nullable RequestOption option) {
-        var context = CallerContext.build(callerProperties, method, param, option);
+        CallerContext context = CallerContext.build(callerProperties, method, param, option);
 
         if (context.getApiItem().getNeedCache()) {
             if (context.getRequestOption().isFromCache()) {
@@ -31,27 +33,47 @@ public class Caller {
             }
         }
 
+        ApiResult apiResult = null;
+
         if (context.getApiResult() != null) {
+            context.setRuntime(0);
+            context.setSource("c");
             CallerOption.log(context);
-            return context.getApiResult();
+            apiResult = context.getApiResult();
         }
 
-        try {
-            RestTemplate restTemplate = new RestTemplate();
+        if (apiResult == null) {
+            StopWatch sw = new StopWatch();
 
-            var entity = restTemplate.exchange(context.getFinalUrl(),
-                    context.getHttpMethod(),
-                    context.getHttpEntity(),
-                    String.class);
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                sw.start();
+                ResponseEntity<String> entity = restTemplate.exchange(context.getFinalUrl(),
+                        context.getHttpMethod(),
+                        context.getHttpEntity(),
+                        String.class);
+                sw.stop();
 
-            context.setApiResult(new ApiResult(entity));
-            if (context.getApiItem().getNeedCache()) {
-                CallerOption.setCache(context);
+                context.setRuntime(sw.getTotalTimeSeconds());
+                context.setSource("r");
+
+                context.setApiResult(new ApiResult(entity));
+                if (context.getApiItem().getNeedCache()) {
+                    CallerOption.setCache(context);
+                }
+
+                apiResult = context.getApiResult();
+            } catch (HttpClientErrorException ex) {
+                apiResult = new ApiResult(ex.getStatusCode(), ex.getResponseBodyAsString());
+            } finally {
+                if (sw.isRunning()) {
+                    sw.stop();
+                }
             }
-
-            return context.getApiResult();
-        } catch (HttpClientErrorException ex) {
-            return new ApiResult(ex.getStatusCode(), ex.getResponseBodyAsString());
         }
+
+        CallerOption.log(context);
+
+        return apiResult;
     }
 }

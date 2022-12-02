@@ -1,20 +1,9 @@
 spring:
   caller:
     serviceItems:
-      - apiName: "gh"
-        baseUrl: "https://api.github.com"
-        apiItems:
-          - method: "getUserInfo"
-            url: "/users/{username}"
-            httpMethod: "GET"
-            paramType: "path"
-            description: "查询用户信息"
-            needCache: false
-            cacheTime: 0
-            contentType: "application/json"
       - api-name: "weibo"
         authorizationType: "none"
-        baseUrl: "https://weibo.com/ajax"
+        base-url: "https://weibo.com/ajax"
         timeout: 5000
         api-items:
           - method: "hot"
@@ -27,3 +16,11 @@ spring:
             content-type: "application/json"
             authorization-type: "none"
             timeout: 5000
+      - api-name: "es"
+        base-url: "http://member.dev.cnki.net:8901"
+        apiItems:
+          - method: "SaveData"
+            url: "/elasticsearch/elasticsearch/saveIpWhiteList"
+            http-method: "POST"
+            param-type: "body"
+            description: "保存日志到ES"

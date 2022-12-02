@@ -5,6 +5,7 @@ import cn.liangjw.apicaller.properties.ApiItem;
 import cn.liangjw.apicaller.properties.CallerProperties;
 import cn.liangjw.apicaller.properties.ServiceItem;
 import cn.liangjw.apicaller.utils.CallerUtil;
+import com.alibaba.fastjson.JSONObject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,9 +28,17 @@ public class CallerContext {
 
     private Object param;
 
+    private String jsonParam;
+
     private RequestOption requestOption;
 
     private String finalUrl;
+
+    @Setter(AccessLevel.MODULE)
+    private double runtime;
+
+    @Setter(AccessLevel.MODULE)
+    private String source;
 
     @Setter
     private HttpHeaders httpHeaders;
@@ -47,19 +56,24 @@ public class CallerContext {
         CallerContext context = new CallerContext();
 
         context.method = method;
-        var names = CallerUtil.splitEndpointName(method);
+        String[] names = CallerUtil.splitEndpointName(method);
         context.serviceName = names[0];
         context.apiName = names[1];
         context.serviceItem = CallerUtil.getServiceItem(callerProperties, context.serviceName);
         context.apiItem = CallerUtil.getApiItem(context.serviceItem, context.apiName);
         context.param = param;
+        context.jsonParam = param == null ? "" : JSONObject.toJSONString(param);
         context.requestOption = requestOption != null ? requestOption : RequestOption.getDefaultRequestOption();
 
-        // 以下四个步骤包含请求授权配置, 不要调整顺序
+        // 以下步骤包含请求授权配置, 不要调整顺序
         context.httpHeaders = CallerUtil.getDefaultHeaders();
+        if (context.apiItem.getContentType() == null || context.apiItem.getContentType().isEmpty()) {
+            context.apiItem.setContentType("application/json");
+        }
+        context.httpHeaders.add("Content-Type", context.apiItem.getContentType());
         context.finalUrl = context.getFinalUrl();
         context = CallerOption.getAuthorizedContext(context);
-        context.httpEntity = CallerUtil.getRequestHttpEntity(context);
+        context.httpEntity = new HttpEntity<>(context.getJsonParam(), context.getHttpHeaders());
 
         return context;
     }

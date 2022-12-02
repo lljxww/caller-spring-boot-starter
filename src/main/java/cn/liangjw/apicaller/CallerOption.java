@@ -63,7 +63,7 @@ public class CallerOption {
     }
 
     static void log(CallerContext context) {
-        if (logConsumer != null) {
+        if (logConsumer != null && !context.getRequestOption().isDontLog()) {
             logConsumer.accept(context);
         }
     }

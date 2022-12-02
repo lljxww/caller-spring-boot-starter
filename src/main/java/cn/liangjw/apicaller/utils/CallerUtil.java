@@ -12,6 +12,7 @@ import org.springframework.lang.Nullable;
 
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class CallerUtil {
@@ -20,28 +21,28 @@ public class CallerUtil {
             return null;
         }
 
-        for (T item : source) {
-            if (predicate.test(item)) {
-                return item;
-            }
+        Optional<T> result = source.stream().filter(predicate).findFirst();
+
+        if (result == null) {
+            return null;
         }
 
-        return null;
+        return result.get();
     }
 
     public static String[] splitEndpointName(String method) {
-        var nameArray = method.split("\\.");
+        String[] nameArray = method.split("\\.");
         return nameArray;
     }
 
     public static ServiceItem getServiceItem(CallerProperties callerProperties, String serviceName) {
-        var serviceItem = CallerUtil.firstOrDefault(callerProperties.getServiceItems(),
+        ServiceItem serviceItem = CallerUtil.firstOrDefault(callerProperties.getServiceItems(),
                 i -> i.getApiName().equalsIgnoreCase(serviceName));
         return serviceItem;
     }
 
     public static ApiItem getApiItem(ServiceItem serviceItem, String apiName) {
-        var apiItem = CallerUtil.firstOrDefault(serviceItem.getApiItems(),
+        ApiItem apiItem = CallerUtil.firstOrDefault(serviceItem.getApiItems(),
                 i -> i.getMethod().equalsIgnoreCase(apiName));
         return apiItem;
     }
@@ -56,11 +57,11 @@ public class CallerUtil {
 
             String query = "?";
 
-            for (var item : paramJObject.keySet()) {
+            for (String item : paramJObject.keySet()) {
                 query += ("&" + item + "=" + URLEncoder.encode(String.valueOf(paramJObject.get(item))));
             }
 
-            var finalUrl = url + query;
+            String finalUrl = url + query;
 
             if (url.contains("?")) {
                 finalUrl = finalUrl.replace("?&", "&");
@@ -76,8 +77,8 @@ public class CallerUtil {
                 return url;
             }
 
-            var finalUrl = url;
-            for (var item : paramJObject.keySet()) {
+            String finalUrl = url;
+            for (String item : paramJObject.keySet()) {
                 finalUrl = finalUrl.replace("{" + item + "}", URLEncoder.encode(String.valueOf(paramJObject.get(item))));
             }
 
