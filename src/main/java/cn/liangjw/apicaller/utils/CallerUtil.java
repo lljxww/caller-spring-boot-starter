@@ -4,18 +4,23 @@ import cn.liangjw.apicaller.CallerContext;
 import cn.liangjw.apicaller.properties.ApiItem;
 import cn.liangjw.apicaller.properties.CallerProperties;
 import cn.liangjw.apicaller.properties.ServiceItem;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.Nullable;
 
 import java.net.URLEncoder;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 public class CallerUtil {
+    private final static ObjectMapper mapper = new ObjectMapper();
+
     public static <T> T firstOrDefault(List<T> source, Predicate<T> predicate) {
         if (source == null) {
             return null;
@@ -48,7 +53,7 @@ public class CallerUtil {
     }
 
     public static String getFinalUrl(String paramType, String url, @Nullable Object param) {
-        JSONObject paramJObject = (JSONObject) JSONObject.toJSON(param);
+        JsonNode jsonNode = mapper.convertValue(param, JsonNode.class);
 
         if ("query".equalsIgnoreCase(paramType)) {
             if (param == null) {
@@ -57,8 +62,11 @@ public class CallerUtil {
 
             String query = "?";
 
-            for (String item : paramJObject.keySet()) {
-                query += ("&" + item + "=" + URLEncoder.encode(String.valueOf(paramJObject.get(item))));
+            Iterator<Map.Entry<String, JsonNode>> keyValuePairs = jsonNode.fields();
+
+            while (keyValuePairs.hasNext()) {
+                Map.Entry<String, JsonNode> keyValuePair = keyValuePairs.next();
+                query += ("&" + keyValuePair.getKey() + "=" + URLEncoder.encode(keyValuePair.getValue().asText()));
             }
 
             String finalUrl = url + query;
@@ -78,8 +86,12 @@ public class CallerUtil {
             }
 
             String finalUrl = url;
-            for (String item : paramJObject.keySet()) {
-                finalUrl = finalUrl.replace("{" + item + "}", URLEncoder.encode(String.valueOf(paramJObject.get(item))));
+
+            Iterator<Map.Entry<String, JsonNode>> keyValuePairs = jsonNode.fields();
+
+            while (keyValuePairs.hasNext()) {
+                Map.Entry<String, JsonNode> keyValuePair = keyValuePairs.next();
+                finalUrl = finalUrl.replace("{" + keyValuePair.getKey() + "}", URLEncoder.encode(keyValuePair.getValue().asText()));
             }
 
             return finalUrl;
@@ -100,7 +112,11 @@ public class CallerUtil {
 
         if (context.getParam() != null
                 && context.getApiItem().getParamType().equalsIgnoreCase("body")) {
-            requestParam = JSON.toJSONString(context.getParam());
+            try {
+                requestParam = mapper.writeValueAsString(context.getParam());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return new HttpEntity<>(requestParam, context.getHttpHeaders());

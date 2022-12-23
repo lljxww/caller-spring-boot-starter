@@ -1,26 +1,32 @@
 package cn.liangjw.apicaller.models;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import cn.liangjw.apicaller.utils.JsonNodeUtil;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 
-public class ApiResult {
+import java.io.Serializable;
+
+public class ApiResult implements Serializable {
     @Getter
     private String raw;
 
     @Getter
     private HttpStatus statusCode;
 
-    private JSONObject jObject;
+    private JsonNode jsonNode;
+
+    private ObjectMapper mapper = new ObjectMapper();
 
     public ApiResult(ResponseEntity<String> entity) {
         statusCode = entity.getStatusCode();
 
         try {
             raw = entity.getBody();
-            jObject = (JSONObject) JSONObject.parse(raw);
+            jsonNode = mapper.readValue(raw, JsonNode.class);
         } catch (Exception ex) {
 
         }
@@ -30,8 +36,9 @@ public class ApiResult {
         this.statusCode = statusCode;
         this.raw = raw;
 
-        if (JSON.isValid(raw)) {
-            jObject = (JSONObject) JSONObject.parse(raw);
+        try{
+            jsonNode = mapper.readValue(raw, JsonNode.class);
+        } catch (Exception e) {
         }
     }
 
@@ -44,26 +51,24 @@ public class ApiResult {
             return null;
         }
 
-        if (jObject == null) {
+        if (jsonNode == null) {
             return null;
         }
 
-        String value = jObject.getString(key);
-
         try {
-            return jObject.getObject(key, clazz);
+            return JsonNodeUtil.getValueWithCaseInsensitiveKey(jsonNode, key, clazz);
         } catch (Exception ex) {
             return null;
         }
     }
 
     public <T> T toObject(Class<T> clazz) {
-        if (jObject == null) {
+        if (jsonNode == null) {
             return null;
         }
 
         try {
-            return jObject.toJavaObject(clazz);
+            return mapper.treeToValue(jsonNode, clazz);
         } catch (Exception ex) {
             return null;
         }

@@ -1,7 +1,8 @@
 package cn.liangjw.apicaller;
 
 import cn.liangjw.apicaller.models.ApiResult;
-import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,8 +21,10 @@ public class CallerCallTest {
     @Autowired
     Caller caller;
 
+    private ObjectMapper mapper = new ObjectMapper();
+
     @Test
-    public void LogTest() {
+    public void LogTest() throws JsonProcessingException {
         WebApiCallLog log = new WebApiCallLog();
         log.setMethod("test-method");
 
@@ -61,9 +64,9 @@ public class CallerCallTest {
         private String index;
         private String jsonString;
 
-        public ESModel(String index, LogBase log) {
+        public ESModel(String index, LogBase log) throws JsonProcessingException {
             this.index = index;
-            jsonString = JSON.toJSONString(log);
+            jsonString = mapper.writeValueAsString(log);
         }
     }
 }

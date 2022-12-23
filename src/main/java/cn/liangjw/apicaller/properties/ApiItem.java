@@ -21,7 +21,7 @@ public class ApiItem {
 
     private String contentType;
 
-    private String authorizationType = "none";
+    private String authorizationType;
 
     private int timeout = 30;
 }

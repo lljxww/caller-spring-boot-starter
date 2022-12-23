@@ -5,7 +5,7 @@ import cn.liangjw.apicaller.properties.ApiItem;
 import cn.liangjw.apicaller.properties.CallerProperties;
 import cn.liangjw.apicaller.properties.ServiceItem;
 import cn.liangjw.apicaller.utils.CallerUtil;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,6 +48,8 @@ public class CallerContext {
     @Setter(AccessLevel.MODULE)
     private ApiResult apiResult;
 
+    private static final ObjectMapper mapper = new ObjectMapper();
+
     private CallerContext() {
     }
 
@@ -62,7 +64,13 @@ public class CallerContext {
         context.serviceItem = CallerUtil.getServiceItem(callerProperties, context.serviceName);
         context.apiItem = CallerUtil.getApiItem(context.serviceItem, context.apiName);
         context.param = param;
-        context.jsonParam = param == null ? "" : JSONObject.toJSONString(param);
+
+        try {
+            context.jsonParam = param == null ? "" : mapper.writeValueAsString(param);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         context.requestOption = requestOption != null ? requestOption : RequestOption.getDefaultRequestOption();
 
         // 以下步骤包含请求授权配置, 不要调整顺序
